@@ -1,4 +1,5 @@
 import * as BABYLON from "@babylonjs/core";
+import "@babylonjs/loaders";
 import { Galaxy } from "./Galaxy";
 
 const Mode = {
@@ -80,6 +81,8 @@ function update () {
 
       floatingRoot.position = new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
+      // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
+      // floatingRoot.rotationQuaternion = q;
 
       // mainCameraRoot.rotate(BABYLON.Vector3.Up, 45
       const offset = 1.6;
@@ -131,10 +134,20 @@ function addObject () {
   renderTarget.renderList.push(earth); // rendertargettextureに書き込むオブジェクトを指定
 
   // human
-  human = BABYLON.MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0.1, height: 0.8, diameterBottom: 0.25 });// BABYLON.CreateCapsule("obj", { height: 1, radius: 0.125 }, mainScene);
-  human.material = new BABYLON.StandardMaterial("objMat");
-  human.parent = floatingRoot;
-  floatingRoot.position.y = -2;
+  // human = BABYLON.MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0.1, height: 0.8, diameterBottom: 0.25 });// BABYLON.CreateCapsule("obj", { height: 1, radius: 0.125 }, mainScene);
+  // human.material = new BABYLON.StandardMaterial("objMat");
+  // human.parent = floatingRoot;
+  // const localAxes = new BABYLON.AxesViewer(mainScene, 1);
+  // localAxes.xAxis.parent = floatingRoot;
+  // localAxes.yAxis.parent = floatingRoot;
+  // localAxes.zAxis.parent = floatingRoot;
+  // floatingRoot.position.y = -2;
+  BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
+    human = mainScene.getMeshByName("__root__");
+    human.scaling = new BABYLON.Vector3(1, 1, 1);
+    human.rotation = new BABYLON.Vector3(0, 0, 0);
+    human.parent = floatingRoot;
+  });
 
   // debug obj
   debug = BABYLON.CreateSphere("debug", { diameter: 0.5 }, mainScene);
@@ -161,6 +174,12 @@ function addObject () {
   // add root
   screenCamera.parent = floatingRoot;
   mainCamera.parent = mainCameraRoot;
+
+  // add models
+  // BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
+  //   console.log(obj);
+  //   obj.parent = floatingRoot;
+  // });
 }
 
 function getDecimal (num) {
@@ -199,6 +218,14 @@ function walkingModeInit () {
   screenRoot.rotate(screenRoot.right, 1.57);
 
   mode = Mode.walking;
+}
+
+function lookAt (currentDir, currentPos, targetPos) {
+  const targetDir = targetPos.clone().subtract(currentPos).normalize();
+  const axis = currentDir.clone().cross(currentPos).normalize();
+  const rad = Math.acos(BABYLON.Vector3.Dot(targetDir, currentDir));
+  const q = BABYLON.Quaternion.RotationAxis(axis, rad);
+  return q;
 }
 
 // Render every frame
