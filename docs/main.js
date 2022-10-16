@@ -11,7 +11,7 @@ let vlat = 0;
 let vlon = 0;
 let lon = 0.5; // y
 let lat = 0.5; // x
-const alt = 8;
+const humanAlt = 8;
 const t = 0.03;
 const pi = 3.1415;
 const attenuationRate = 0.998;
@@ -75,11 +75,12 @@ function update () {
       const phi = getDecimal(lat) * pi * 2;
       const theta = BABYLON.Scalar.Clamp(getDecimal(lon) * pi, 0.2, pi - 0.2);
 
-      const x = alt * Math.sin(theta) * Math.sin(phi);
-      const y = alt * Math.cos(theta);
-      const z = alt * Math.sin(theta) * Math.cos(phi);
+      // const x = alt * Math.sin(theta) * Math.sin(phi);
+      // const y = alt * Math.cos(theta);
+      // const z = alt * Math.sin(theta) * Math.cos(phi);
 
-      floatingRoot.position = new BABYLON.Vector3(x, y, z);
+      const p = calcLonLatToXYZ(phi, theta, humanAlt);
+      floatingRoot.position = p;// new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
       // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
       // floatingRoot.rotationQuaternion = q;
@@ -87,7 +88,7 @@ function update () {
       // mainCameraRoot.rotate(BABYLON.Vector3.Up, 45
       const offset = 1.6;
       mainCameraRoot.lookAt(floatingRoot.position);
-      mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, new BABYLON.Vector3(x, y, z).scale(offset), 0.005);
+      mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, new BABYLON.Vector3(p.x, p.y, p.z).scale(offset), 0.005);
       break;
     }
     case Mode.walking: {
@@ -180,6 +181,47 @@ function addObject () {
   //   console.log(obj);
   //   obj.parent = floatingRoot;
   // });
+
+  // add green pillar
+  BABYLON.Effect.ShadersStore.customVertexShader = `
+  precision highp float;
+
+  // Attributes
+  attribute vec3 position;
+  attribute vec2 uv;
+
+  uniform mat4 worldViewProjection;
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  void main(void) {
+      gl_Position = worldViewProjection * vec4(position, 1.0);
+      vUV = uv;
+      lPos = position;
+  }
+  `;
+  BABYLON.Effect.ShadersStore.customFragmentShader = `
+  precision highp float;
+
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  uniform sampler2D textureSampler;
+
+  void main(void) {
+      gl_FragColor = vec4(0, 1, 0, 0.4-lPos.y);
+  }
+  `;
+
+  for (let i = 0; i < 20; i++) {
+    const pillarMat = new BABYLON.ShaderMaterial("cyos", mainScene, { vertex: "custom", fragment: "custom" }, { needAlphaBlending: true });
+    const pillar = BABYLON.CreateCylinder("pillar01", { height: 0.5, diameter: 0.12 }, mainScene);
+    pillar.material = pillarMat;
+    const pos = calcLonLatToXYZ(Math.random() * Math.PI * 2.0, Math.random() * Math.PI, 7.75);
+    const q = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), pos.clone().normalize());
+    pillar.rotationQuaternion = q;
+    pillar.position = pos;
+  }
 }
 
 function getDecimal (num) {
@@ -221,11 +263,18 @@ function walkingModeInit () {
 }
 
 function lookAt (currentDir, currentPos, targetPos) {
-  const targetDir = targetPos.clone().subtract(currentPos).normalize();
-  const axis = currentDir.clone().cross(currentPos).normalize();
+  const targetDir = targetPos.subtract(currentPos);
+  const axis = currentDir.clone().cross(targetDir);
   const rad = Math.acos(BABYLON.Vector3.Dot(targetDir, currentDir));
   const q = BABYLON.Quaternion.RotationAxis(axis, rad);
   return q;
+}
+
+function calcLonLatToXYZ (phi, theta, alt) {
+  const x = alt * Math.sin(theta) * Math.sin(phi);
+  const y = alt * Math.cos(theta);
+  const z = alt * Math.sin(theta) * Math.cos(phi);
+  return new BABYLON.Vector3(x, y, z);
 }
 
 // Render every frame
