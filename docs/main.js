@@ -87,7 +87,8 @@ function update () {
       break;
     }
     case Mode.walking: {
-      earth.rotate(BABYLON.Vector3.Right(), amount);
+      const rotateAxis = mainCameraRoot.right;
+      earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       screenRoot.lookAt(mainCameraRoot.position);
@@ -241,6 +242,7 @@ function walkingModeInit () {
   // walkingRoot.rotate(floatingRoot.right, -1.57);
   cameraPosforWalkingMode = floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
 
+  // humanを回転させる処理
   const q1 = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), walkingRoot.position.clone().normalize());
   walkingRoot.rotationQuaternion = q1;
   const r = Math.acos(BABYLON.Vector3.Dot(walkingRoot.position.clone().subtract(cameraPosforWalkingMode).normalize(), walkingRoot.forward));
