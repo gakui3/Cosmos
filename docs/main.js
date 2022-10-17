@@ -1,6 +1,8 @@
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
+import "@babylonjs/gui";
 import { Galaxy } from "./Galaxy";
+// import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
 
 const Mode = {
   floating: 0,
@@ -18,7 +20,7 @@ const attenuationRate = 0.998;
 const acceleration = 0.02;
 let mode = Mode.floating;
 let amount = 0;
-let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, galaxy, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode, currentPhi, currentTheta;
+let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode, currentPhi, currentTheta, galaxy;
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas);
@@ -95,7 +97,6 @@ function update () {
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       screenRoot.lookAt(mainCameraRoot.position);
-      walkingRoot.rotate(walkingRoot.position.clone().normalize(), amount * 2, BABYLON.Space.WORLD);
       amount = 0;
       break;
     }
@@ -116,6 +117,8 @@ function init () {
   renderTarget = new BABYLON.RenderTargetTexture("depth", 1920, mainScene, true); // rendertargettextureの作成(unityでいうrendertexture)
   renderTarget.activeCamera = screenCamera; // rendertargettextureのアクティブカメラを指定
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
+
+  addGUI();
 }
 
 function addObject () {
@@ -278,6 +281,21 @@ function calcLonLatToXYZ (phi, theta, alt) {
   const y = alt * Math.cos(theta);
   const z = alt * Math.sin(theta) * Math.cos(phi);
   return new BABYLON.Vector3(x, y, z);
+}
+
+function addGUI () {
+  // const text = document.createElement("text");
+  // text.style.top = "100px";
+  // text.style.right = "30px";
+  // text.textContent = "click";
+  // text.style.width = "100px";
+  // text.style.height = "100px";
+
+  // text.setAttribute = ("id", "but");
+  // text.style.position = "absolute";
+  // text.style.color = "black";
+
+  // document.body.appendChild(text);
 }
 
 // Render every frame
