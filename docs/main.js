@@ -53,11 +53,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           }
           break;
         case "i":
-          // BABYLON.Tools.CreateScreenshot(engine, screenCamera, { width: 1024, height: 1024 });
-          screen.alwaysSelectAsActiveMesh = false;
           BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, screenCamera, { width: 1920, height: 1080 });
-          screen.alwaysSelectAsActiveMesh = true;
-
           break;
         default:
           break;
