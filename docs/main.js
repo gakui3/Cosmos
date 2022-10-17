@@ -18,7 +18,7 @@ const attenuationRate = 0.998;
 const acceleration = 0.02;
 let mode = Mode.floating;
 let amount = 0;
-let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, galaxy, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode;
+let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, galaxy, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode, currentPhi, currentTheta;
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas);
@@ -75,10 +75,10 @@ function update () {
 
       lat = lat + vlat * t;
       lon = lon + vlon * t;
-      const phi = getDecimal(lat) * pi * 2;
-      const theta = BABYLON.Scalar.Clamp(getDecimal(lon) * pi, 0.2, pi - 0.2);
+      currentPhi = getDecimal(lat) * pi * 2;
+      currentTheta = BABYLON.Scalar.Clamp(getDecimal(lon) * pi, 0.2, pi - 0.2);
 
-      const p = calcLonLatToXYZ(phi, theta, humanAlt);
+      const p = calcLonLatToXYZ(currentPhi, currentTheta, humanAlt);
       floatingRoot.position = p;// new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
       // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
@@ -95,6 +95,7 @@ function update () {
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       screenRoot.lookAt(mainCameraRoot.position);
+      walkingRoot.rotate(walkingRoot.position.clone().normalize(), amount * 2, BABYLON.Space.WORLD);
       amount = 0;
       break;
     }
@@ -153,7 +154,7 @@ function addObject () {
   debug.material = new BABYLON.StandardMaterial("debugMat");
 
   // screen
-  screen = BABYLON.CreatePlane("map", { width: 40, height: 20 }, mainScene);
+  screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, mainScene);
   screen.scaling = new BABYLON.Vector3(-1, 1, 1);
   screen.parent = screenRoot;
   screenRoot.position.z = 20;
@@ -175,12 +176,6 @@ function addObject () {
   screenCamera.position.y = -0.5;
   screenCamera.parent = floatingRoot;
   mainCamera.parent = mainCameraRoot;
-
-  // add models
-  // BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
-  //   console.log(obj);
-  //   obj.parent = floatingRoot;
-  // });
 
   // add green pillar
   BABYLON.Effect.ShadersStore.customVertexShader = `
@@ -250,8 +245,9 @@ function walkingModeInit () {
   // humanを回転させる処理
   const q1 = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), walkingRoot.position.clone().normalize());
   walkingRoot.rotationQuaternion = q1;
-  const r = Math.acos(BABYLON.Vector3.Dot(walkingRoot.position.clone().subtract(cameraPosforWalkingMode).normalize(), walkingRoot.forward));
-  walkingRoot.rotate(walkingRoot.position.clone().normalize(), -r, BABYLON.Space.WORLD);
+  let r = Math.acos(BABYLON.Vector3.Dot((walkingRoot.position.clone().subtract(cameraPosforWalkingMode)).normalize(), walkingRoot.forward));
+  r = currentPhi < 3.14 ? r * -1 : r;
+  walkingRoot.rotate(walkingRoot.position.clone().normalize(), r, BABYLON.Space.WORLD);
 
   // for screen
   screenRoot.position = floatingRoot.position.add(floatingRoot.up.scale(25)).add(floatingRoot.forward.scale(3));
