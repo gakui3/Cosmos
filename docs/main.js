@@ -52,6 +52,13 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
             floatingModeInit();
           }
           break;
+        case "i":
+          // BABYLON.Tools.CreateScreenshot(engine, screenCamera, { width: 1024, height: 1024 });
+          screen.alwaysSelectAsActiveMesh = false;
+          BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, screenCamera, { width: 1920, height: 1080 });
+          screen.alwaysSelectAsActiveMesh = true;
+
+          break;
         default:
           break;
       }
@@ -109,7 +116,7 @@ function init () {
 
   mainCameraRoot.position = new BABYLON.Vector3(0, 0, -13);
 
-  renderTarget = new BABYLON.RenderTargetTexture("depth", 1024, mainScene, true); // rendertargettextureの作成(unityでいうrendertexture)
+  renderTarget = new BABYLON.RenderTargetTexture("depth", 1920, mainScene, true); // rendertargettextureの作成(unityでいうrendertexture)
   renderTarget.activeCamera = screenCamera; // rendertargettextureのアクティブカメラを指定
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
 }
@@ -151,6 +158,7 @@ function addObject () {
 
   // screen
   screen = BABYLON.CreatePlane("map", { width: 40, height: 20 }, mainScene);
+  screen.scaling = new BABYLON.Vector3(-1, 1, 1);
   screen.parent = screenRoot;
   screenRoot.position.z = 20;
   screenRoot.position.y = 10;
@@ -168,6 +176,7 @@ function addObject () {
   light.intensity = 0.7;
 
   // add root
+  screenCamera.position.y = -0.5;
   screenCamera.parent = floatingRoot;
   mainCamera.parent = mainCameraRoot;
 
