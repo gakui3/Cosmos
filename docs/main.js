@@ -18,7 +18,7 @@ const attenuationRate = 0.998;
 const acceleration = 0.02;
 let mode = Mode.floating;
 let amount = 0;
-let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, galaxy, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light;
+let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, galaxy, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode;
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas);
@@ -75,17 +75,12 @@ function update () {
       const phi = getDecimal(lat) * pi * 2;
       const theta = BABYLON.Scalar.Clamp(getDecimal(lon) * pi, 0.2, pi - 0.2);
 
-      // const x = alt * Math.sin(theta) * Math.sin(phi);
-      // const y = alt * Math.cos(theta);
-      // const z = alt * Math.sin(theta) * Math.cos(phi);
-
       const p = calcLonLatToXYZ(phi, theta, humanAlt);
       floatingRoot.position = p;// new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
       // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
       // floatingRoot.rotationQuaternion = q;
 
-      // mainCameraRoot.rotate(BABYLON.Vector3.Up, 45
       const offset = 1.6;
       mainCameraRoot.lookAt(floatingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, new BABYLON.Vector3(p.x, p.y, p.z).scale(offset), 0.005);
@@ -93,9 +88,8 @@ function update () {
     }
     case Mode.walking: {
       earth.rotate(BABYLON.Vector3.Right(), amount);
-      const p = floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
       mainCameraRoot.lookAt(walkingRoot.position);
-      mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, p, 0.05);
+      mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       screenRoot.lookAt(mainCameraRoot.position);
       amount = 0;
       break;
@@ -244,7 +238,13 @@ function walkingModeInit () {
   walkingRoot.position = BABYLON.Vector3.Zero();
   human.parent = walkingRoot;
   walkingRoot.position = floatingRoot.position;
-  walkingRoot.rotate(floatingRoot.right, -1.57);
+  // walkingRoot.rotate(floatingRoot.right, -1.57);
+  cameraPosforWalkingMode = floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
+
+  const q1 = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), walkingRoot.position.clone().normalize());
+  walkingRoot.rotationQuaternion = q1;
+  const r = Math.acos(BABYLON.Vector3.Dot(walkingRoot.position.clone().subtract(cameraPosforWalkingMode).normalize(), walkingRoot.forward));
+  walkingRoot.rotate(walkingRoot.position.clone().normalize(), -r, BABYLON.Space.WORLD);
 
   // for screen
   screenRoot.position = floatingRoot.position.add(floatingRoot.up.scale(25)).add(floatingRoot.forward.scale(3));
