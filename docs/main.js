@@ -2,6 +2,7 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/gui";
 import { Galaxy } from "./Galaxy";
+import { AddTransitionEffect } from "./TransitionEffect";
 // import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
 
 const Mode = {
@@ -119,6 +120,7 @@ function init () {
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
 
   addGUI();
+  AddTransitionEffect(mainCamera);
 }
 
 function addObject () {
