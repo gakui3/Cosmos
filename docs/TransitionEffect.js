@@ -2,29 +2,35 @@ import * as BABYLON from "@babylonjs/core";
 import GUI from "lil-gui";
 import { gsap } from "gsap";
 
+const params = {
+  Width: 0.0,
+  Core: 0.5,
+  NoiseScale: 20.0,
+  NoiseSpeed: 2.38,
+  Time: 0,
+  FadeOut: () => {
+    FadeOut();
+  },
+  FadeIn: () => {
+    FadeIn();
+  },
+};
+
+export const FadeIn = () => {
+  gsap.fromTo(params, { Width: 1.0 }, { duration: 1.25, Width: 2.0, ease: "power2.in" });
+};
+
+export const FadeOut = () => {
+  gsap.fromTo(params, { Width: 0.0 }, { duration: 1.25, Width: 1.0, ease: "power2.out" });
+};
+
+export const FadeInOut = () => {
+  gsap.fromTo(params, { Width: 0.0 }, { duration: 1.25, Width: 1.0, ease: "power2.out", onComplete: () => { FadeIn(); } });
+};
+
 export const AddTransitionEffect = (camera) => {
   const gui = new GUI();
-  const params = {
-    Width: 0.0,
-    Core: 0.5,
-    NoiseScale: 20.0,
-    NoiseSpeed: 2.38,
-    Time: 0,
-    FadeOut: () => {
-      gsap.fromTo(params, { Width: 0.0 }, { duration: 1.5, Width: 1.0, ease: "power2.out" });
-    },
-    FadeIn: () => {
-      gsap.fromTo(params, { Width: 1.0 }, { duration: 1.5, Width: 2.0, ease: "power2.in" });
-    },
-  };
 
-  //   function fadeOut () {
-  //     gsap.fromTo(params, { Width: 0.0 }, { duration: 0.5, Width: 1.0 });
-  //   }
-
-  //   function fadeIn () {
-  //     gsap.fromTo(params, { Width: 1.0 }, { duration: 1.0, Width: 2.0 });
-  //   }
   BABYLON.Effect.ShadersStore.customFragmentShader = `
     #ifdef GL_ES
         precision highp float;

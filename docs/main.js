@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/gui";
 import { Galaxy } from "./Galaxy";
-import { AddTransitionEffect } from "./TransitionEffect";
+import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 // import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
 
 const Mode = {
@@ -52,6 +52,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           if (mode === Mode.floating) {
             walkingModeInit();
           } else if (mode === Mode.walking) {
+            FadeInOut();
             floatingModeInit();
           }
           break;
