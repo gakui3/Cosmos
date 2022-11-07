@@ -122,6 +122,7 @@ function init () {
 
   addGUI();
   AddTransitionEffect(mainCamera);
+  addEarthAroundLine();
 }
 
 function addObject () {
@@ -299,6 +300,23 @@ function addGUI () {
   // text.style.color = "black";
 
   // document.body.appendChild(text);
+}
+
+function addEarthAroundLine () {
+  const linePoints = [];
+  const _lat = 0;
+  let _lon = 0;
+
+  for (let i = -1; i < 1; i += 0.01) {
+    _lon = i;
+    const _phi = getDecimal(_lat) * pi * 2;
+    const _theta = getDecimal(_lon) * pi;
+
+    const p = calcLonLatToXYZ(_phi, _theta, humanAlt);
+    linePoints.push(p);
+  }
+
+  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints });
 }
 
 // Render every frame
