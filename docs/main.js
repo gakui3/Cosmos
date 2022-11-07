@@ -5,6 +5,7 @@ import { Galaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
 import { addGreenPillar, addEarthAroundLine } from "./AddObjects";
+import { WarpEffect } from "./WarpEffect";
 
 let vlat = 0;
 let vlon = 0;
@@ -53,13 +54,30 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
         default:
           break;
       }
-      vlat = BABYLON.Scalar.Clamp(vlat, -10, 10);
-      vlon = BABYLON.Scalar.Clamp(vlon, -10, 10);
-      break;
-    // case BABYLON.KeyboardEventTypes.KEYUP:
-    //   console.log("up");
-    //   break;
   }
+
+  switch (kbInfo.type) {
+    case BABYLON.KeyboardEventTypes.KEYUP:
+      switch (kbInfo.event.key) {
+        case "c":
+          WarpEffect(mainScene, new BABYLON.Vector3(0, 0, -8));
+          break;
+        default:
+          break;
+      }
+  }
+
+  vlat = BABYLON.Scalar.Clamp(vlat, -10, 10);
+  vlon = BABYLON.Scalar.Clamp(vlon, -10, 10);
+  // case BABYLON.KeyboardEventTypes.KEYDOWN:
+  //   switch (kbInfo.event.key) {
+  //     case "c":
+  //       WarpEffect(mainScene, new BABYLON.Vector3(0, 0, -8));
+  //       console.log("up");
+  //       break;
+  //     default:
+  //       break;
+  //   }
 });
 
 function update () {
