@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/gui";
 import { Galaxy } from "./Galaxy";
-import { WarpEffect } from "./WarpEffect";
+import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 // import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
 
 const Mode = {
@@ -52,6 +52,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           if (mode === Mode.floating) {
             walkingModeInit();
           } else if (mode === Mode.walking) {
+            FadeInOut();
             floatingModeInit();
           }
           break;
@@ -120,9 +121,7 @@ function init () {
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
 
   addGUI();
-  addPostprocessing();
-
-  // WarpEffect();
+  AddTransitionEffect(mainCamera);
 }
 
 function addObject () {
@@ -224,8 +223,6 @@ function addObject () {
     pillar.rotationQuaternion = q;
     pillar.position = pos;
   }
-
-  addEarthAroundLine();
 }
 
 function getDecimal (num) {
@@ -302,60 +299,6 @@ function addGUI () {
   // text.style.color = "black";
 
   // document.body.appendChild(text);
-}
-
-function addEarthAroundLine () {
-  const linePoints = [];
-
-  const _lat = 0;
-  let _lon = 0;
-
-  for (let i = -1; i < 1; i += 0.01) {
-    _lon = i;
-    const _phi = getDecimal(_lat) * pi * 2;
-    const _theta = getDecimal(_lon) * pi;
-
-    const p = calcLonLatToXYZ(_phi, _theta, humanAlt);
-    linePoints.push(p);
-  }
-
-  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints });
-}
-
-function addPostprocessing () {
-  BABYLON.Effect.ShadersStore.customFragmentShader = `
-    #ifdef GL_ES
-        precision highp float;
-    #endif
-
-    // Samplers
-    varying vec2 vUV;
-    uniform sampler2D textureSampler;
-
-    // Parameters
-    uniform vec2 screenSize;
-    uniform float threshold;
-
-    void main(void) 
-    {
-        //vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);
-        vec4 baseColor = texture2D(textureSampler, vUV);
-
-
-        //if (baseColor.r < threshold) {
-        //    gl_FragColor = baseColor;
-        //} else {
-        //    gl_FragColor = vec4(0);
-        //}
-        gl_FragColor = baseColor;
-    }
-    `;
-
-  const postProcess = new BABYLON.PostProcess("My custom post process", "custom", ["screenSize", "threshold"], null, 1, mainCamera);
-  postProcess.onApply = function (effect) {
-    effect.setFloat2("screenSize", postProcess.width, postProcess.height);
-    effect.setFloat("threshold", 0.30);
-  };
 }
 
 // Render every frame
