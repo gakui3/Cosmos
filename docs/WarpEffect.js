@@ -1,6 +1,7 @@
 import * as BABYLON from "@babylonjs/core";
 
-export const WarpEffect = (scene) => {
+export const WarpEffect = (scene, cylinder) => {
+  // rectangle
   const rectangleParticleSystem = new BABYLON.ParticleSystem("rectangleParticles", 20);
   rectangleParticleSystem.emitRate = 1000;
   rectangleParticleSystem.maxSize = 0.1;
@@ -47,4 +48,6 @@ export const WarpEffect = (scene) => {
   squareParticleSystem.addColorGradient(0.45, new BABYLON.Color4(0, 0, 0, 0));
 
   squareParticleSystem.start(100);
+
+  // cylinder
 };

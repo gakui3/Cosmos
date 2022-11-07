@@ -3,22 +3,13 @@ import "@babylonjs/loaders";
 import "@babylonjs/gui";
 import { Galaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
-// import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
-
-const Mode = {
-  floating: 0,
-  walking: 1,
-};
+import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
+import { addGreenPillar, addEarthAroundLine } from "./AddObjects";
 
 let vlat = 0;
 let vlon = 0;
 let lon = 0.5; // y
 let lat = 0.5; // x
-const humanAlt = 8;
-const t = 0.03;
-const pi = 3.1415;
-const attenuationRate = 0.998;
-const acceleration = 0.02;
 let mode = Mode.floating;
 let amount = 0;
 let earth, human, debug, screen, mainCamera, screenCamera, renderTarget, floatingRoot, walkingRoot, screenRoot, mainCameraRoot, light, cameraPosforWalkingMode, currentPhi, currentTheta, galaxy;
@@ -36,17 +27,17 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
     case BABYLON.KeyboardEventTypes.KEYDOWN:
       switch (kbInfo.event.key) {
         case "w":
-          vlon = vlon - acceleration * t;
+          vlon = vlon - params.acceleration * params.t;
           amount = 0.01;
           break;
         case "a":
-          vlat = vlat + acceleration * t;
+          vlat = vlat + params.acceleration * params.t;
           break;
         case "s":
-          vlon = vlon + acceleration * t;
+          vlon = vlon + params.acceleration * params.t;
           break;
         case "d":
-          vlat = vlat - acceleration * t;
+          vlat = vlat - params.acceleration * params.t;
           break;
         case "u":
           if (mode === Mode.floating) {
@@ -74,15 +65,15 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
 function update () {
   switch (mode) {
     case Mode.floating: {
-      vlat = vlat * attenuationRate;
-      vlon = vlon * attenuationRate;
+      vlat = vlat * params.attenuationRate;
+      vlon = vlon * params.attenuationRate;
 
-      lat = lat + vlat * t;
-      lon = lon + vlon * t;
-      currentPhi = getDecimal(lat) * pi * 2;
-      currentTheta = BABYLON.Scalar.Clamp(getDecimal(lon) * pi, 0.2, pi - 0.2);
+      lat = lat + vlat * params.t;
+      lon = lon + vlon * params.t;
+      currentPhi = getDecimal(lat) * params.pi * 2;
+      currentTheta = BABYLON.Scalar.Clamp(getDecimal(lon) * params.pi, 0.2, params.pi - 0.2);
 
-      const p = calcLonLatToXYZ(currentPhi, currentTheta, humanAlt);
+      const p = calcLonLatToXYZ(currentPhi, currentTheta, params.humanAlt);
       floatingRoot.position = p;// new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
       // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
@@ -122,7 +113,6 @@ function init () {
 
   addGUI();
   AddTransitionEffect(mainCamera);
-  addEarthAroundLine();
 }
 
 function addObject () {
@@ -184,50 +174,8 @@ function addObject () {
   screenCamera.parent = floatingRoot;
   mainCamera.parent = mainCameraRoot;
 
-  // add green pillar
-  BABYLON.Effect.ShadersStore.customVertexShader = `
-  precision highp float;
-
-  // Attributes
-  attribute vec3 position;
-  attribute vec2 uv;
-
-  uniform mat4 worldViewProjection;
-  varying vec2 vUV;
-  varying vec3 lPos;
-
-  void main(void) {
-      gl_Position = worldViewProjection * vec4(position, 1.0);
-      vUV = uv;
-      lPos = position;
-  }
-  `;
-  BABYLON.Effect.ShadersStore.customFragmentShader = `
-  precision highp float;
-
-  varying vec2 vUV;
-  varying vec3 lPos;
-
-  uniform sampler2D textureSampler;
-
-  void main(void) {
-      gl_FragColor = vec4(0, 1, 0, 0.4-lPos.y);
-  }
-  `;
-
-  for (let i = 0; i < 20; i++) {
-    const pillarMat = new BABYLON.ShaderMaterial("cyos", mainScene, { vertex: "custom", fragment: "custom" }, { needAlphaBlending: true });
-    const pillar = BABYLON.CreateCylinder("pillar01", { height: 0.5, diameter: 0.12 }, mainScene);
-    pillar.material = pillarMat;
-    const pos = calcLonLatToXYZ(Math.random() * Math.PI * 2.0, Math.random() * Math.PI, 7.75);
-    const q = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), pos.clone().normalize());
-    pillar.rotationQuaternion = q;
-    pillar.position = pos;
-  }
-}
-
-function getDecimal (num) {
-  return num - ((num >= 0) ? Math.floor(num) : Math.ceil(num));
+  addGreenPillar(mainScene);
+  addEarthAroundLine();
 }
 
 function floatingModeInit () {
@@ -272,21 +220,6 @@ function walkingModeInit () {
   mode = Mode.walking;
 }
 
-function lookAt (currentDir, currentPos, targetPos) {
-  const targetDir = targetPos.subtract(currentPos);
-  const axis = currentDir.clone().cross(targetDir);
-  const rad = Math.acos(BABYLON.Vector3.Dot(targetDir, currentDir));
-  const q = BABYLON.Quaternion.RotationAxis(axis, rad);
-  return q;
-}
-
-function calcLonLatToXYZ (phi, theta, alt) {
-  const x = alt * Math.sin(theta) * Math.sin(phi);
-  const y = alt * Math.cos(theta);
-  const z = alt * Math.sin(theta) * Math.cos(phi);
-  return new BABYLON.Vector3(x, y, z);
-}
-
 function addGUI () {
   // const text = document.createElement("text");
   // text.style.top = "100px";
@@ -300,23 +233,6 @@ function addGUI () {
   // text.style.color = "black";
 
   // document.body.appendChild(text);
-}
-
-function addEarthAroundLine () {
-  const linePoints = [];
-  const _lat = 0;
-  let _lon = 0;
-
-  for (let i = -1; i < 1; i += 0.01) {
-    _lon = i;
-    const _phi = getDecimal(_lat) * pi * 2;
-    const _theta = getDecimal(_lon) * pi;
-
-    const p = calcLonLatToXYZ(_phi, _theta, humanAlt);
-    linePoints.push(p);
-  }
-
-  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints });
 }
 
 // Render every frame
