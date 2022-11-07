@@ -14,6 +14,7 @@
   "dependencies": {
     "@babylonjs/gui": "^5.28.0",
     "@babylonjs/loaders": "^5.26.1",
+    "@tensorflow/tfjs": "^4.0.0",
     "babylonjs": "^5.25.0",
     "glsl-noise": "0.0.0",
     "glslify-loader": "^2.0.0",
