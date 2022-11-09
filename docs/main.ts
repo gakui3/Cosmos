@@ -229,6 +229,8 @@ function walkingModeInit () {
   const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5);
   walkingRoot.position = p;
   // walkingRoot.rotate(floatingRoot.right, -1.57);
+  WarpEffect(mainScene, p);
+  WarpEffect(mainScene, floatingRoot.position);
   cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
 
   // humanを回転させる処理
