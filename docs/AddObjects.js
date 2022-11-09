@@ -59,3 +59,45 @@ export const addEarthAroundLine = () => {
 
   BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints });
 };
+
+export const addMiniEarth = (scene) => {
+  const miniEarth = BABYLON.CreateSphere("sphere1", { segments: 20, diameter: 1 }, scene);
+  miniEarth.position = new BABYLON.Vector3(-1, 0, -8);
+
+  BABYLON.Effect.ShadersStore.miniEarthVertexShader = `
+  precision highp float;
+
+  // Attributes
+  attribute vec3 position;
+  attribute vec2 uv;
+
+  uniform mat4 worldViewProjection;
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  void main(void) {
+      gl_Position = worldViewProjection * vec4(position, 1.0);
+      vUV = uv;
+      lPos = position;
+  }
+  `;
+  BABYLON.Effect.ShadersStore.miniEarthFragmentShader = `
+  precision highp float;
+
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  uniform sampler2D textureSampler;
+
+  void main(void) {
+      gl_FragColor = vec4(0, 1, 0, 0.4-lPos.y);
+  }
+  `;
+
+  const miniEarthMat = new BABYLON.ShaderMaterial("miniEarth", scene, { vertex: "miniEarth", fragment: "miniEarth" }, { needAlphaBlending: true });
+  miniEarthMat.diffuseTexture = new BABYLON.Texture("./assets/earth_multimap.png");
+  miniEarthMat.ambientColor = new BABYLON.Color3(1, 1, 1);
+  miniEarthMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+  miniEarth.material = miniEarthMat;
+  miniEarth.rotate(BABYLON.Vector3.Right(), 3.14);
+};
