@@ -20,7 +20,7 @@ let earth: BABYLON.Mesh,
   debug: BABYLON.Mesh,
   screen: BABYLON.Mesh,
   mainCamera: BABYLON.Camera,
-  screenCamera: BABYLON.Camera,
+  screenCamera: BABYLON.UniversalCamera,
   renderTarget: BABYLON.RenderTargetTexture,
   floatingRoot: BABYLON.TransformNode,
   walkingRoot: BABYLON.TransformNode,
@@ -114,7 +114,7 @@ function update () {
       earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
-      screenRoot.lookAt(mainCameraRoot.position);
+      // screenRoot.lookAt(mainCameraRoot.position);
       amount = 0;
       break;
     }
@@ -177,8 +177,9 @@ function addObject () {
   });
 
   // debug obj
-  debug = BABYLON.CreateSphere("debug", { diameter: 0.5 }, mainScene);
-  debug.material = new BABYLON.StandardMaterial("debugMat");
+  // debug = BABYLON.CreateSphere("debug", { diameter: 0.5 }, mainScene);
+  // debug.material = new BABYLON.StandardMaterial("debugMat");
+  // debug.position = new BABYLON.Vector3(0, 8, 0);
 
   // screen
   screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, mainScene);
@@ -200,8 +201,9 @@ function addObject () {
   light.intensity = 0.7;
 
   // add root
-  screenCamera.position.y = -0.5;
-  screenCamera.parent = floatingRoot;
+  screenCamera.position.y = 2.5;
+  screenCamera.setTarget(BABYLON.Vector3.Zero());
+  screenCamera.parent = walkingRoot;
   mainCamera.parent = mainCameraRoot;
 
   addGreenPillar(mainScene);
@@ -222,22 +224,24 @@ function walkingModeInit () {
   // for human
   human.parent = null;
   walkingRoot.position = BABYLON.Vector3.Zero();
+  walkingRoot.rotationQuaternion = BABYLON.Quaternion.Identity();
   human.parent = walkingRoot;
-  walkingRoot.position = floatingRoot.position;
+  const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5);
+  walkingRoot.position = p;
   // walkingRoot.rotate(floatingRoot.right, -1.57);
-  cameraPosforWalkingMode = floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
+  cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
 
   // humanを回転させる処理
   const q1 = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), walkingRoot.position.clone().normalize());
   walkingRoot.rotationQuaternion = q1;
-  let r = Math.acos(BABYLON.Vector3.Dot((walkingRoot.position.clone().subtract(cameraPosforWalkingMode)).normalize(), walkingRoot.forward));
-  r = currentPhi < 3.14 ? r * -1 : r;
-  walkingRoot.rotate(walkingRoot.position.clone().normalize(), r, BABYLON.Space.WORLD);
+  // let r = Math.acos(BABYLON.Vector3.Dot((walkingRoot.position.clone().subtract(cameraPosforWalkingMode)).normalize(), walkingRoot.forward));
+  // r = currentPhi < 3.14 ? r * -1 : r;
+  // walkingRoot.rotate(walkingRoot.position.clone().normalize(), r, BABYLON.Space.WORLD);
 
   // for screen
-  screenRoot.position = floatingRoot.position.add(floatingRoot.up.scale(25)).add(floatingRoot.forward.scale(3));
-  const dir = floatingRoot.position.add(floatingRoot.up);
-  debug.position = dir.scale(20);
+  // screenRoot.position = floatingRoot.position.add(floatingRoot.up.scale(25)).add(floatingRoot.forward.scale(3));
+  // const dir = floatingRoot.position.add(floatingRoot.up);
+  // debug.position = dir.scale(20);
 
   // const axis0 = BABYLON.Vector3.Cross(dir.scale(-1), screenParent.forward);
   // const rad = Math.acos(BABYLON.Vector3.Dot(dir.scale(-1), screenParent.forward) / (dir.scale(-1).length * screenParent.forward.length));
@@ -245,7 +249,7 @@ function walkingModeInit () {
 
   // const q1 = BABYLON.Quaternion.RotationAxis()
   // screenParent.rotation = walkingParent.rotation;
-  screenRoot.rotate(screenRoot.right, 1.57);
+  // screenRoot.rotate(screenRoot.right, 1.57);
 
   mode = Mode.walking;
 }
