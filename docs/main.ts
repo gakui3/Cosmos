@@ -60,8 +60,8 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           if (mode === Mode.floating) {
             vlat = vlat + params.acceleration * params.t;
           } else {
-            earth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
-            miniEarth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
+            earth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
           }
           break;
         case "s":
@@ -76,8 +76,8 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           if (mode === Mode.floating) {
             vlat = vlat - params.acceleration * params.t;
           } else {
-            earth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
-            miniEarth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
+            earth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
           }
           break;
         case "u":
@@ -260,7 +260,7 @@ function addObject () {
   
 
   addGreenPillar(mainScene);
-  addEarthAroundLine();
+  addEarthAroundLine(mainScene);
 }
 
 function floatingModeInit () {

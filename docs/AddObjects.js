@@ -43,7 +43,7 @@ export const addGreenPillar = (scene) => {
   }
 };
 
-export const addEarthAroundLine = () => {
+export const addEarthAroundLine = (scene) => {
   const linePoints = [];
   const _lat = 0;
   let _lon = 0;
@@ -57,7 +57,7 @@ export const addEarthAroundLine = () => {
     linePoints.push(p);
   }
 
-  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints });
+  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints }, scene);
 };
 
 export const addMiniEarth = (scene) => {
