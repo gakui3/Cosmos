@@ -49,17 +49,36 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
     case BABYLON.KeyboardEventTypes.KEYDOWN:
       switch (kbInfo.event.key) {
         case "w":
-          vlon = vlon - params.acceleration * params.t;
-          amount = 0.01;
+          if (mode === Mode.floating) {
+            vlon = vlon - params.acceleration * params.t;
+          } else {
+            earth.rotate(BABYLON.Vector3.Right(), 0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Right(), 0.01, BABYLON.Space.WORLD);
+          }
           break;
         case "a":
-          vlat = vlat + params.acceleration * params.t;
+          if (mode === Mode.floating) {
+            vlat = vlat + params.acceleration * params.t;
+          } else {
+            earth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Up(), -0.01, BABYLON.Space.WORLD);
+          }
           break;
         case "s":
-          vlon = vlon + params.acceleration * params.t;
+          if (mode === Mode.floating) {
+            vlon = vlon + params.acceleration * params.t;
+          } else {
+            earth.rotate(BABYLON.Vector3.Right(), -0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Right(), -0.01, BABYLON.Space.WORLD);
+          }
           break;
         case "d":
-          vlat = vlat - params.acceleration * params.t;
+          if (mode === Mode.floating) {
+            vlat = vlat - params.acceleration * params.t;
+          } else {
+            earth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
+            miniEarth.rotate(BABYLON.Vector3.Up(), 0.01, BABYLON.Space.WORLD);
+          }
           break;
         case "u":
           if (mode === Mode.floating) {
@@ -128,7 +147,7 @@ function update () {
     }
     case Mode.walking: {
       const rotateAxis = mainCameraRoot.right;
-      earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
+      // earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       // screenRoot.lookAt(mainCameraRoot.position);
@@ -168,7 +187,6 @@ function init () {
   renderTarget.activeCamera = screenCamera; // rendertargettextureのアクティブカメラを指定
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
 
-  addGUI();
   AddTransitionEffect(mainCamera);
 }
 
@@ -293,21 +311,6 @@ function walkingModeInit () {
   // screenRoot.rotate(screenRoot.right, 1.57);
 
   mode = Mode.walking;
-}
-
-function addGUI () {
-  // const text = document.createElement("text");
-  // text.style.top = "100px";
-  // text.style.right = "30px";
-  // text.textContent = "click";
-  // text.style.width = "100px";
-  // text.style.height = "100px";
-
-  // text.setAttribute = ("id", "but");
-  // text.style.position = "absolute";
-  // text.style.color = "black";
-
-  // document.body.appendChild(text);
 }
 
 engine.runRenderLoop(() => {
