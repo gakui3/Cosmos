@@ -61,8 +61,9 @@ export const addEarthAroundLine = () => {
 };
 
 export const addMiniEarth = (scene) => {
-  const miniEarth = BABYLON.CreateSphere("sphere1", { segments: 20, diameter: 1 }, scene);
-  miniEarth.position = new BABYLON.Vector3(-1, 0, -8);
+  const miniEarth = BABYLON.CreateSphere("sphere1", { segments: 20, diameter: 2 }, scene);
+  // miniEarth.position = new BABYLON.Vector3(-1, 0, -8);
+  miniEarth.position = new BABYLON.Vector3(100, 0, 3);
 
   BABYLON.Effect.ShadersStore.miniEarthVertexShader = `
   precision highp float;
@@ -87,17 +88,20 @@ export const addMiniEarth = (scene) => {
   varying vec2 vUV;
   varying vec3 lPos;
 
-  uniform sampler2D textureSampler;
+  uniform sampler2D mainTexture;
 
   void main(void) {
-      gl_FragColor = vec4(0, 1, 0, 0.4-lPos.y);
+      gl_FragColor = texture2D(mainTexture, vUV);
   }
   `;
 
-  const miniEarthMat = new BABYLON.ShaderMaterial("miniEarth", scene, { vertex: "miniEarth", fragment: "miniEarth" }, { needAlphaBlending: true });
-  miniEarthMat.diffuseTexture = new BABYLON.Texture("./assets/earth_multimap.png");
-  miniEarthMat.ambientColor = new BABYLON.Color3(1, 1, 1);
-  miniEarthMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+  const miniEarthMat = new BABYLON.ShaderMaterial("miniEarth", scene, { vertex: "miniEarth", fragment: "miniEarth" }, { needAlphaBlending: true, disableDepthWrite: true });
   miniEarth.material = miniEarthMat;
+  const tex = new BABYLON.Texture("./assets/earth_multimap.png");
+  miniEarthMat.setTexture("mainTexture", tex);
+
   miniEarth.rotate(BABYLON.Vector3.Right(), 3.14);
+  miniEarth.renderingGroupId = 1;
+  miniEarth.visibility = 0;
+  return miniEarth;
 };
