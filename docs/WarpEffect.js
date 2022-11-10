@@ -6,8 +6,8 @@ export const WarpEffect = (scene, position) => {
   const root = new BABYLON.TransformNode("root", scene);
 
   // rectangle
-  const rootRectangleParticleSystem = new BABYLON.TransformNode("rootRectangleParticleSystem");
-  const rectangleParticleSystem = new BABYLON.ParticleSystem("rectangleParticles", 20);
+  const rootRectangleParticleSystem = new BABYLON.TransformNode("rootRectangleParticleSystem", scene);
+  const rectangleParticleSystem = new BABYLON.ParticleSystem("rectangleParticles", 20, scene);
   rootRectangleParticleSystem.position = new BABYLON.Vector3(0, 2, 0);
   rectangleParticleSystem.isLocal = true;
   // rectangleParticleSystem.emitRate = 1000;
@@ -34,8 +34,8 @@ export const WarpEffect = (scene, position) => {
   rectangleParticleSystem.start();
 
   // square
-  const rootSquareParticleSystem = new BABYLON.TransformNode("rootSquareParticleSystem");
-  const squareParticleSystem = new BABYLON.ParticleSystem("squareParticles", 30);
+  const rootSquareParticleSystem = new BABYLON.TransformNode("rootSquareParticleSystem", scene);
+  const squareParticleSystem = new BABYLON.ParticleSystem("squareParticles", 30, scene);
   rootSquareParticleSystem.position = new BABYLON.Vector3(0, 2, 0);
   squareParticleSystem.isLocal = true;
   // squareParticleSystem.emitRate = 1000;
