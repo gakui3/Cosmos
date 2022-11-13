@@ -91,7 +91,18 @@ export const addMiniEarth = (scene) => {
   uniform sampler2D mainTexture;
 
   void main(void) {
-      gl_FragColor = texture2D(mainTexture, vUV);
+    vec4 _Color = vec4(0.45, 0.52, 0.55, 1.0);
+    vec4 _ColorLine = vec4(0.29, 0.255, 0.255, 1.0);
+    vec4 _ColorOcean = vec4(0.09, 0.13, 0.27, 0.51);
+    float _Threshold = 0.985;
+    float _Freq = 90.0;
+    float _FreqH = 180.0;
+
+    vec4 _line = _ColorLine * clamp(step(_Threshold, sin(vUV.y * _Freq)) + step(_Threshold, sin(vUV.x * _FreqH)), 0.0, 1.0);
+    float ocean = texture2D(mainTexture, vUV).b;
+    vec4 _c = vec4(mix(_Color.x, _ColorOcean.x, ocean), mix(_Color.y, _ColorOcean.y, ocean), mix(_Color.z, _ColorOcean.z, ocean), 1.0);
+
+    gl_FragColor = _c + _line;
   }
   `;
 
