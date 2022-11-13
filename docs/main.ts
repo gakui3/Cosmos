@@ -176,12 +176,14 @@ function init () {
   subCamera.viewport = new BABYLON.Viewport(0, 0, 0.3, 0.3);
   subSceneForMiniEarth.autoClear = false
 
+  mainCamera.parent = mainCameraRoot;
+
   // BABYLON.RenderingManager.MIN_RENDERINGGROUPS = -1;
 
   // mainCamera.attachControl(canvas, true);
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.0, 0.1, 1.0);
 
-  mainCameraRoot.position = new BABYLON.Vector3(0, 0, -13);
+  mainCameraRoot.position = new BABYLON.Vector3(0, -20, -13);
 
   renderTarget = new BABYLON.RenderTargetTexture("depth", 1920, mainScene, true); // rendertargettextureの作成(unityでいうrendertexture)
   renderTarget.activeCamera = screenCamera; // rendertargettextureのアクティブカメラを指定
@@ -256,7 +258,7 @@ function addObject () {
   screenCamera.position = new BABYLON.Vector3(0, 2.5, 0);
   screenCamera.setTarget(BABYLON.Vector3.Zero());
   screenCamera.parent = satelliteRoot;
-  mainCamera.parent = mainCameraRoot;
+  // mainCamera.parent = mainCameraRoot;
   
 
   addGreenPillar(mainScene);
