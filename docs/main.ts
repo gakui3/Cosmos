@@ -180,7 +180,7 @@ function init () {
 
   // BABYLON.RenderingManager.MIN_RENDERINGGROUPS = -1;
 
-  mainCamera.attachControl(canvas, true);
+  // mainCamera.attachControl(canvas, true);
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
 
   mainCameraRoot.position = new BABYLON.Vector3(0, -20, -13);

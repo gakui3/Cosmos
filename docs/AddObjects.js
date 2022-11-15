@@ -34,6 +34,7 @@ export const addGreenPillar = (scene) => {
 
   for (let i = 0; i < 20; i++) {
     const pillarMat = new BABYLON.ShaderMaterial("cyos", scene, { vertex: "custom", fragment: "custom" }, { needAlphaBlending: true });
+    pillarMat.forceDepthWrite = true;
     const pillar = BABYLON.CreateCylinder("pillar01", { height: 0.5, diameter: 0.12 }, scene);
     pillar.material = pillarMat;
     const pos = calcLonLatToXYZ(Math.random() * Math.PI * 2.0, Math.random() * Math.PI, 7.75);
