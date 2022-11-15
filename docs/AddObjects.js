@@ -57,7 +57,12 @@ export const addEarthAroundLine = (scene) => {
     linePoints.push(p);
   }
 
-  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints }, scene);
+  const m = new BABYLON.BackgroundMaterial("lineMat", scene);
+  // m.diffuseColor = new BABYLON.Color3(1, 1, 1);
+  // m.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+  // m.emissiveColor = new BABYLON.Color3(1, 1, 1);
+  // m.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  BABYLON.MeshBuilder.CreateLines("lines", { points: linePoints, material: m }, scene);
 };
 
 export const addMiniEarth = (scene) => {

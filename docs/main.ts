@@ -6,7 +6,7 @@ import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
 import { addGreenPillar, addEarthAroundLine, addMiniEarth } from "./AddObjects";
 import { WarpEffect } from "./WarpEffect";
-import { AbstractMesh } from "babylonjs";
+import { AbstractMesh, Material, NodeMaterial } from "babylonjs";
 
 let vlat = 0;
 let vlon = 0;
@@ -180,8 +180,8 @@ function init () {
 
   // BABYLON.RenderingManager.MIN_RENDERINGGROUPS = -1;
 
-  // mainCamera.attachControl(canvas, true);
-  mainScene.clearColor = new BABYLON.Color4(0.0, 0.0, 0.1, 1.0);
+  mainCamera.attachControl(canvas, true);
+  mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
 
   mainCameraRoot.position = new BABYLON.Vector3(0, -20, -13);
 
@@ -190,21 +190,36 @@ function init () {
   mainScene.customRenderTargets.push(renderTarget); // rendertargettextureを有効化
 
   AddTransitionEffect(mainCamera);
+  var postProcess = new BABYLON.ImageProcessingPostProcess("processing", 1.0, mainCamera);
+    postProcess.vignetteWeight = 4;
+    postProcess.vignetteStretch = 1;
+    postProcess.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+    postProcess.vignetteEnabled = true;
 }
 
-function addObject () {
+async function addObject () {
   floatingRoot = new BABYLON.TransformNode("floatingRoot");
   walkingRoot = new BABYLON.TransformNode("walkingRoot");
   screenRoot = new BABYLON.TransformNode("screenRoot");
   satelliteRoot = new BABYLON.TransformNode("satelliteRoot");
 
   // earth
-  earth = BABYLON.CreateSphere("sphere1", { segments: 20, diameter: 15 }, mainScene);
-  const material = new BABYLON.StandardMaterial("earthMat", mainScene);
-  material.diffuseTexture = new BABYLON.Texture("./assets/earth.png");
-  material.ambientColor = new BABYLON.Color3(1, 1, 1);
-  material.emissiveColor = new BABYLON.Color3(1, 1, 1);
-  earth.material = material;
+  earth = BABYLON.CreateSphere("sphere1", { segments: 30, diameter: 15 }, mainScene);
+  // const material = new BABYLON.StandardMaterial("earthMat", mainScene);
+  // material.diffuseTexture = new BABYLON.Texture("./assets/earth.png");
+  // material.ambientColor = new BABYLON.Color3(1, 1, 1);
+  // material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+  // conso material = new BABYLON.NodeMaterial();
+  // earth.material = material;
+
+  await BABYLON.NodeMaterial.ParseFromSnippetAsync("#IMYMEK#14", mainScene).then((nodeMaterial : any) => {
+    earth.material = nodeMaterial; //#IMYMEK#2
+    // var gl = new BABYLON.GlowLayer("glow", mainScene);
+    // gl.intensity = 0.5;
+    // const tex = new BABYLON.Texture("./assets/earth.png");
+    // nodeMaterial.setTexture("mainTexture", tex);
+    // nodeMaterial.getBlockByName("ImageSourceBlock").texture = tex;
+  });
   earth.rotate(BABYLON.Vector3.Right(), 3.14);
   if (renderTarget.renderList !== null) {
     renderTarget.renderList.push(earth); // rendertargettextureに書き込むオブジェクトを指定 
@@ -214,26 +229,12 @@ function addObject () {
   miniEarth = addMiniEarth(subSceneForMiniEarth);
 
 
-  // human
-  // human = BABYLON.MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0.1, height: 0.8, diameterBottom: 0.25 });// BABYLON.CreateCapsule("obj", { height: 1, radius: 0.125 }, mainScene);
-  // human.material = new BABYLON.StandardMaterial("objMat");
-  // human.parent = floatingRoot;
-  // const localAxes = new BABYLON.AxesViewer(mainScene, 1);
-  // localAxes.xAxis.parent = floatingRoot;
-  // localAxes.yAxis.parent = floatingRoot;
-  // localAxes.zAxis.parent = floatingRoot;
-  // floatingRoot.position.y = -2;
   BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
     human = <BABYLON.Mesh>mainScene.getMeshByName("__root__");
     human.scaling = new BABYLON.Vector3(1, 1, 1);
     human.rotation = new BABYLON.Vector3(0, 0, 0);
     human.parent = floatingRoot;
   });
-
-  // debug obj
-  // debug = BABYLON.CreateSphere("debug", { diameter: 0.5 }, mainScene);
-  // debug.material = new BABYLON.StandardMaterial("debugMat");
-  // debug.position = new BABYLON.Vector3(0, 8, 0);
 
   // screen
   screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, mainScene);
