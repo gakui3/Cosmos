@@ -4,9 +4,10 @@ import "@babylonjs/gui";
 import { CreateGalaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
-import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen } from "./AddObjects";
+import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen, addRightBottomUI, addEarth } from "./AddObjects";
 import { WarpEffect } from "./WarpEffect";
 import { AbstractMesh, Material, NodeMaterial } from "babylonjs";
+import { any } from "@tensorflow/tfjs";
 
 let vlat = 0;
 let vlon = 0;
@@ -34,7 +35,8 @@ let earth: BABYLON.Mesh,
   cameraPosforWalkingMode: any,
   currentPhi: number,
   currentTheta: number,
-  galaxy: any;
+  galaxy: any,
+  rightBottomGUI : any;
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
@@ -170,7 +172,7 @@ function init () {
   mainCamera.parent = mainCameraRoot;
 
 
-  // mainCamera.attachControl(canvas, true);
+  mainCamera.attachControl(canvas, true);
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
 
   mainCameraRoot.position = new BABYLON.Vector3(0, -20, -13);
@@ -194,26 +196,10 @@ async function addObject () {
   satelliteRoot = new BABYLON.TransformNode("satelliteRoot");
 
   // earth
-  earth = BABYLON.CreateSphere("sphere1", { segments: 30, diameter: 15 }, mainScene);
-  // const material = new BABYLON.StandardMaterial("earthMat", mainScene);
-  // material.diffuseTexture = new BABYLON.Texture("./assets/earth.png");
-  // material.ambientColor = new BABYLON.Color3(1, 1, 1);
-  // material.emissiveColor = new BABYLON.Color3(1, 1, 1);
-  // conso material = new BABYLON.NodeMaterial();
-  // earth.material = material;
+  earth = await addEarth(mainScene, renderTarget);
 
-  await BABYLON.NodeMaterial.ParseFromSnippetAsync("#IMYMEK#17", mainScene).then((nodeMaterial : any) => {
-    earth.material = nodeMaterial; //#IMYMEK#2
-    // var gl = new BABYLON.GlowLayer("glow", mainScene);
-    // gl.intensity = 0.5;
-    // const tex = new BABYLON.Texture("./assets/earth.png");
-    // nodeMaterial.setTexture("mainTexture", tex);
-    // nodeMaterial.getBlockByName("ImageSourceBlock").texture = tex;
-  });
-  earth.rotate(BABYLON.Vector3.Right(), 3.14);
-  if (renderTarget.renderList !== null) {
-    renderTarget.renderList.push(earth); // rendertargettextureに書き込むオブジェクトを指定 
-  }
+  //right bottom img
+  rightBottomGUI = addRightBottomUI(mainScene);
 
   // mini earth
   miniEarth = addMiniEarth(subSceneForMiniEarth);
@@ -253,6 +239,7 @@ function floatingModeInit () {
   human.parent = floatingRoot;
   // human.rotate(BABYLON.Vector3.Right(), -1.57);
   miniEarth.visibility = 0;
+  rightBottomGUI.rootContainer.isVisible = false;
   mode = Mode.floating;
 }
 
@@ -271,26 +258,11 @@ function walkingModeInit () {
   cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
 
   miniEarth.visibility = 1;
+  rightBottomGUI.rootContainer.isVisible = true;
 
   // humanを回転させる処理
   const q1 = lookAt(new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 0, 0), walkingRoot.position.clone().normalize());
   walkingRoot.rotationQuaternion = q1;
-  // let r = Math.acos(BABYLON.Vector3.Dot((walkingRoot.position.clone().subtract(cameraPosforWalkingMode)).normalize(), walkingRoot.forward));
-  // r = currentPhi < 3.14 ? r * -1 : r;
-  // walkingRoot.rotate(walkingRoot.position.clone().normalize(), r, BABYLON.Space.WORLD);
-
-  // for screen
-  // screenRoot.position = floatingRoot.position.add(floatingRoot.up.scale(25)).add(floatingRoot.forward.scale(3));
-  // const dir = floatingRoot.position.add(floatingRoot.up);
-  // debug.position = dir.scale(20);
-
-  // const axis0 = BABYLON.Vector3.Cross(dir.scale(-1), screenParent.forward);
-  // const rad = Math.acos(BABYLON.Vector3.Dot(dir.scale(-1), screenParent.forward) / (dir.scale(-1).length * screenParent.forward.length));
-  // const q0 = BABYLON.Quaternion.RotationAxis(axis0, rad);
-
-  // const q1 = BABYLON.Quaternion.RotationAxis()
-  // screenParent.rotation = walkingParent.rotation;
-  // screenRoot.rotate(screenRoot.right, 1.57);
 
   mode = Mode.walking;
 }

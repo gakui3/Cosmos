@@ -1,6 +1,6 @@
 import * as BABYLON from "@babylonjs/core";
 import { calcLonLatToXYZ, lookAt, getDecimal, params } from "./Common";
-import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
+import { AdvancedDynamicTexture, Image } from "@babylonjs/gui/2D";
 
 export const addGreenPillar = (scene) => {
   BABYLON.Effect.ShadersStore.customVertexShader = `
@@ -170,4 +170,31 @@ export const addMiniEarth = (scene) => {
   miniEarth.renderingGroupId = 1;
   miniEarth.visibility = 0;
   return miniEarth;
+};
+
+export const addEarth = async (scene, renderTarget) => {
+  const earth = BABYLON.CreateSphere("sphere1", { segments: 30, diameter: 15 }, scene);
+  await BABYLON.NodeMaterial.ParseFromSnippetAsync("#IMYMEK#17", scene).then((nodeMaterial) => {
+    earth.material = nodeMaterial; // #IMYMEK#2
+  });
+  earth.rotate(BABYLON.Vector3.Right(), 3.14);
+  if (renderTarget.renderList !== null) {
+    renderTarget.renderList.push(earth); // rendertargettextureに書き込むオブジェクトを指定
+  }
+
+  return earth;
+};
+
+export const addRightBottomUI = (scene) => {
+  // const root = new BABYLON.TransformNode();
+  const guiTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI2", true, scene);
+
+  const image = new Image("img", "./assets/Screen/guide_right.png");
+  image.width = "150px";
+  image.height = "150px";
+  image.top = 280;
+  image.left = 400;
+  guiTexture.addControl(image);
+  guiTexture.rootContainer.isVisible = false;
+  return guiTexture;
 };
