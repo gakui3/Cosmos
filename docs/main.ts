@@ -4,7 +4,7 @@ import "@babylonjs/gui";
 import { CreateGalaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
-import { addGreenPillar, addEarthAroundLine, addMiniEarth } from "./AddObjects";
+import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen } from "./AddObjects";
 import { WarpEffect } from "./WarpEffect";
 import { AbstractMesh, Material, NodeMaterial } from "babylonjs";
 
@@ -20,7 +20,7 @@ let earth: BABYLON.Mesh,
   miniEarth: BABYLON.Mesh,
   human: BABYLON.Mesh,
   debug: BABYLON.Mesh,
-  screen: BABYLON.Mesh,
+  screen: any,//BABYLON.Mesh,
   mainCamera: BABYLON.Camera,
   subCamera: BABYLON.Camera,
   screenCamera: BABYLON.UniversalCamera,
@@ -152,15 +152,6 @@ function update () {
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
       // screenRoot.lookAt(mainCameraRoot.position);
       amount = 0;
-
-      // const pm_invert = mainCamera.getProjectionMatrix().clone().invert();
-      // const vm_invert = mainCamera.getViewMatrix().clone().invert();
-      // const vp_invertMatrix = pm_invert.multiply(vm_invert);
-      // const pp = new BABYLON.Vector3(-0.7, -0.6, 0.75);
-
-      // const v = BABYLON.Vector3.TransformCoordinates(pp, vp_invertMatrix);
-
-      // miniEarth.position = v;
       break;
     }
     default:
@@ -178,7 +169,6 @@ function init () {
 
   mainCamera.parent = mainCameraRoot;
 
-  // BABYLON.RenderingManager.MIN_RENDERINGGROUPS = -1;
 
   // mainCamera.attachControl(canvas, true);
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
@@ -212,7 +202,7 @@ async function addObject () {
   // conso material = new BABYLON.NodeMaterial();
   // earth.material = material;
 
-  await BABYLON.NodeMaterial.ParseFromSnippetAsync("#IMYMEK#14", mainScene).then((nodeMaterial : any) => {
+  await BABYLON.NodeMaterial.ParseFromSnippetAsync("#IMYMEK#17", mainScene).then((nodeMaterial : any) => {
     earth.material = nodeMaterial; //#IMYMEK#2
     // var gl = new BABYLON.GlowLayer("glow", mainScene);
     // gl.intensity = 0.5;
@@ -237,16 +227,7 @@ async function addObject () {
   });
 
   // screen
-  screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, mainScene);
-  screen.scaling = new BABYLON.Vector3(-1, 1, 1);
-  screen.parent = screenRoot;
-  screenRoot.position.z = 20;
-  screenRoot.position.y = 10;
-  const rttMaterial = new BABYLON.StandardMaterial("RTT", mainScene);
-  rttMaterial.emissiveTexture = renderTarget;
-  rttMaterial.disableLighting = true;
-  rttMaterial.backFaceCulling = false;
-  screen.material = rttMaterial;
+  screen = addScreen(mainScene, renderTarget, screenRoot);
 
   // particles
   CreateGalaxy(mainScene);
@@ -259,8 +240,6 @@ async function addObject () {
   screenCamera.position = new BABYLON.Vector3(0, 2.5, 0);
   screenCamera.setTarget(BABYLON.Vector3.Zero());
   screenCamera.parent = satelliteRoot;
-  // mainCamera.parent = mainCameraRoot;
-  
 
   addGreenPillar(mainScene);
   addEarthAroundLine(mainScene);

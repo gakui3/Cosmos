@@ -1,5 +1,6 @@
 import * as BABYLON from "@babylonjs/core";
 import { calcLonLatToXYZ, lookAt, getDecimal, params } from "./Common";
+import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
 
 export const addGreenPillar = (scene) => {
   BABYLON.Effect.ShadersStore.customVertexShader = `
@@ -42,6 +43,54 @@ export const addGreenPillar = (scene) => {
     pillar.rotationQuaternion = q;
     pillar.position = pos;
   }
+};
+
+export const addScreen = async (scene, renderTarget, root) => {
+  const screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, scene);
+  screen.scaling = new BABYLON.Vector3(-1, 1, 1);
+  screen.parent = root;
+  root.position.z = 20;
+  root.position.y = 10;
+
+  BABYLON.Effect.ShadersStore.screenVertexShader = `
+  precision highp float;
+
+  // Attributes
+  attribute vec3 position;
+  attribute vec2 uv;
+
+  uniform mat4 worldViewProjection;
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  void main(void) {
+      gl_Position = worldViewProjection * vec4(position, 1.0);
+      vUV = uv;
+      lPos = position;
+  }
+  `;
+  BABYLON.Effect.ShadersStore.screenFragmentShader = `
+  precision highp float;
+
+  varying vec2 vUV;
+  varying vec3 lPos;
+
+  uniform sampler2D cameraTexture;
+  uniform sampler2D uiTexture;
+
+  void main(void) {
+    vec4 cam = texture2D(cameraTexture, vUV);
+    vec4 ui = texture2D(uiTexture, vec2(1.0-vUV.x, 1.0-vUV.y));
+    gl_FragColor = mix(cam, ui, ui.a);
+  }
+  `;
+  const screenMat = new BABYLON.ShaderMaterial("miniEarth", scene, { vertex: "screen", fragment: "screen" }, { needAlphaBlending: true });
+  const GameTitleGUITexture = AdvancedDynamicTexture.CreateForMesh(screen, 2350, 1000, true, false, false);
+  await GameTitleGUITexture.parseFromSnippetAsync("#EBFC21");
+  screenMat.setTexture("cameraTexture", renderTarget);
+  screenMat.setTexture("uiTexture", GameTitleGUITexture);
+  screen.material = screenMat;// rttMaterial;
+  return screen;
 };
 
 export const addEarthAroundLine = (scene) => {
