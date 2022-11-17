@@ -46,11 +46,22 @@ export const addGreenPillar = (scene) => {
 };
 
 export const addScreen = async (scene, renderTarget, root) => {
-  const screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, scene);
-  screen.scaling = new BABYLON.Vector3(-1, 1, 1);
-  screen.parent = root;
-  root.position.z = 20;
-  root.position.y = 10;
+  let screen;
+  await BABYLON.SceneLoader.LoadAssetContainerAsync("./assets/", "test.glb", scene).then((container) => {
+    screen = container.meshes[1];
+    screen.scaling = new BABYLON.Vector3(4.7, 4.7, 4.7);
+    // obj.rotate(BABYLON.Vector3.Up, )
+    // human.parent = floatingRoot;
+    // screen = obj;
+    screen.parent = root;
+    // screen.rotate(BABYLON.Vector3.Up(), 3.14);
+    screen.position.z = 10;
+    screen.position.y = 10;
+
+    scene.addMesh(screen);
+  });
+  // const screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, scene);
+  // screen.scaling = new BABYLON.Vector3(-1, 1, 1);
 
   BABYLON.Effect.ShadersStore.screenVertexShader = `
   precision highp float;
@@ -82,13 +93,15 @@ export const addScreen = async (scene, renderTarget, root) => {
     vec4 cam = texture2D(cameraTexture, vUV);
     vec4 ui = texture2D(uiTexture, vec2(1.0-vUV.x, 1.0-vUV.y));
     gl_FragColor = mix(cam, ui, ui.a);
+    // gl_FragColor = vec4(vUV.x, vUV.y, 0, 1);
   }
   `;
-  const screenMat = new BABYLON.ShaderMaterial("miniEarth", scene, { vertex: "screen", fragment: "screen" }, { needAlphaBlending: true });
-  const GameTitleGUITexture = AdvancedDynamicTexture.CreateForMesh(screen, 2350, 1000, true, false, false);
+  const screenMat = new BABYLON.ShaderMaterial("screen", scene, { vertex: "screen", fragment: "screen" }, { needAlphaBlending: true });
+  const GameTitleGUITexture = AdvancedDynamicTexture.CreateForMesh(screen, 2350, 1000, true, false, true);
   await GameTitleGUITexture.parseFromSnippetAsync("#EBFC21");
   screenMat.setTexture("cameraTexture", renderTarget);
   screenMat.setTexture("uiTexture", GameTitleGUITexture);
+  screenMat.backFaceCulling = false;
   screen.material = screenMat;// rttMaterial;
   return screen;
 };
