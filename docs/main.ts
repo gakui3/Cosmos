@@ -86,7 +86,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           if (mode === Mode.floating) {
             walkingModeInit();
           } else if (mode === Mode.walking) {
-            FadeInOut();
+            // FadeInOut();
             floatingModeInit();
           }
           break;
