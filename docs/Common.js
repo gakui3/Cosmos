@@ -9,8 +9,9 @@ export const params = {
   humanAlt: 8,
   t: 0.03,
   pi: 3.1415,
-  attenuationRate: 0.998,
-  acceleration: 0.02,
+  attenuationRate: 0.995,
+  acceleration: 0.025,
+  cameraLookatSpeed: 0.01,
 };
 
 export const calcLonLatToXYZ = (phi, theta, alt) => {
