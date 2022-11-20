@@ -22,7 +22,7 @@ let earth: BABYLON.Mesh,
   human: BABYLON.Mesh,
   debug: BABYLON.Mesh,
   screen: any,//BABYLON.Mesh,
-  mainCamera: BABYLON.FreeCamera,
+  mainCamera: BABYLON.ArcRotateCamera,//BABYLON.FreeCamera,
   subCamera: BABYLON.Camera,
   screenCamera: BABYLON.UniversalCamera,
   renderTarget: BABYLON.RenderTargetTexture,
@@ -132,7 +132,7 @@ function update () {
       vlon = vlon * params.attenuationRate;
 
       lat = lat + vlat * params.t;
-      lon = BABYLON.Scalar.Clamp(lon + vlon * params.t, 0.05, 0.95);
+      lon = BABYLON.Scalar.Clamp(lon + vlon * params.t, 0.05, 0.85);
 
       currentPhi = getDecimal(lat) * params.pi * 2;
       currentTheta = getDecimal(lon) * params.pi; //BABYLON.Scalar.Clamp(getDecimal(lon) * params.pi, 0.1, params.pi - 0.1);
@@ -143,7 +143,8 @@ function update () {
       // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
       // floatingRoot.rotationQuaternion = q;
 
-      const p1 = calcLonLatToXYZ(currentPhi, currentTheta+0.25, params.humanAlt);
+      const p1 = calcLonLatToXYZ(currentPhi, currentTheta + 0.2, params.humanAlt);
+      // p1.y = BABYLON.Scalar.Clamp(p1.y, -6.5, 7.5);
       const offset = 1.6;
       mainCameraRoot.lookAt(floatingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, new BABYLON.Vector3(p1.x, p1.y, p1.z).scale(offset), params.cameraLookatSpeed);
@@ -163,7 +164,7 @@ function update () {
 }
 
 function init () {
-  mainCamera = new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
+  mainCamera = new BABYLON.ArcRotateCamera("mainCamera", -1.57, 1.57, 0, BABYLON.Vector3.Zero(), mainScene);//new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
   screenCamera = new BABYLON.UniversalCamera("subCamera", new BABYLON.Vector3(0, 0, -1), mainScene);
   mainCameraRoot = new BABYLON.TransformNode("mainCameraRoot");
 
@@ -174,8 +175,13 @@ function init () {
   mainCamera.parent = mainCameraRoot;
 
 
+  mainCamera.inputs.addMouseWheel();
   mainCamera.attachControl(canvas, true);
-  // mainCamera.inputs.attached.mouse.detachControl();
+
+  mainCamera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+  mainCamera.lowerRadiusLimit = 0;
+  mainCamera.upperRadiusLimit = 20;
+
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
 
   mainCameraRoot.position = new BABYLON.Vector3(0, -20, -13);
