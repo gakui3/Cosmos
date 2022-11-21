@@ -23,7 +23,8 @@ let earth: BABYLON.Mesh,
   debug: BABYLON.Mesh,
   screen: any,//BABYLON.Mesh,
   screenMat: any,//BABYLON.ShaderMaterial,
-  mainCamera:BABYLON.FreeCamera,
+  // mainCamera:BABYLON.FreeCamera,
+  mainCamera: BABYLON.ArcRotateCamera,//BABYLON.FreeCamera,
   subCamera: BABYLON.Camera,
   screenCamera: BABYLON.UniversalCamera,
   renderTarget: BABYLON.RenderTargetTexture,
@@ -187,7 +188,7 @@ function update () {
 }
 
 function init () {
-  mainCamera = new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
+  mainCamera = new BABYLON.ArcRotateCamera("mainCamera", -1.57, 1.57, 0, BABYLON.Vector3.Zero(), mainScene);//new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
   screenCamera = new BABYLON.UniversalCamera("subCamera", new BABYLON.Vector3(0, 0, -1), mainScene);
   mainCameraRoot = new BABYLON.TransformNode("mainCameraRoot");
 
@@ -201,6 +202,8 @@ function init () {
   // mainCamera.inputs.addMouseWheel();
   mainCamera.attachControl(canvas, true);
   mainCamera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+  mainCamera.lowerRadiusLimit = 0;
+  mainCamera.upperRadiusLimit = 20;
 
 
   screenInfoAlpha = 1.0;
@@ -303,7 +306,7 @@ function walkingModeInit (playEffect : boolean) {
   }
 
   cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
-  mainCameraRoot.position = cameraPosforWalkingMode;
+  // mainCameraRoot.position = cameraPosforWalkingMode;
 
   miniEarth.visibility = 1;
   rightBottomGUI.rootContainer.isVisible = true;
