@@ -20,10 +20,8 @@ let satelliteRootRotateRoll = 0;
 let earth: BABYLON.Mesh,
   miniEarth: BABYLON.Mesh,
   human: BABYLON.Mesh,
-  debug: BABYLON.Mesh,
   screen: any,//BABYLON.Mesh,
   screenMat: any,//BABYLON.ShaderMaterial,
-  // mainCamera:BABYLON.FreeCamera,
   mainCamera: BABYLON.ArcRotateCamera,//BABYLON.FreeCamera,
   subCamera: BABYLON.Camera,
   screenCamera: BABYLON.UniversalCamera,
@@ -40,7 +38,8 @@ let earth: BABYLON.Mesh,
   galaxy: any,
   walking: boolean,
   screenInfoAlpha: number,
-  rightBottomGUI : any;
+  rightBottomGUI: any,
+  timer: number;
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
@@ -133,7 +132,6 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
   vlon = BABYLON.Scalar.Clamp(vlon, -0.03, 0.03);
 });
 
-let timer = 0;
 function update () {
   switch (mode) {
     case Mode.floating: {
@@ -149,11 +147,8 @@ function update () {
       const p = calcLonLatToXYZ(currentPhi, currentTheta, params.humanAlt);
       floatingRoot.position = p;// new BABYLON.Vector3(x, y, z);
       floatingRoot.lookAt(new BABYLON.Vector3(0, 0, 0));
-      // const q = lookAt(floatingRoot.forward, floatingRoot.position, new BABYLON.Vector3(0, 0, 0));
-      // floatingRoot.rotationQuaternion = q;
 
       const p1 = calcLonLatToXYZ(currentPhi, currentTheta + 0.2, params.humanAlt);
-      // p1.y = BABYLON.Scalar.Clamp(p1.y, -6.5, 7.5);
       const offset = 1.6;
       mainCameraRoot.lookAt(floatingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, new BABYLON.Vector3(p1.x, p1.y, p1.z).scale(offset), params.cameraLookatSpeed);
@@ -161,7 +156,6 @@ function update () {
     }
     case Mode.walking: {
       const rotateAxis = mainCameraRoot.right;
-      // earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
 
@@ -245,6 +239,7 @@ async function addObject () {
   miniEarth = addMiniEarth(subSceneForMiniEarth);
 
 
+  //human
   BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
     human = <BABYLON.Mesh>mainScene.getMeshByName("__root__");
     human.scaling = new BABYLON.Vector3(1, 1, 1);
@@ -272,8 +267,9 @@ async function addObject () {
   screenCamera.setTarget(BABYLON.Vector3.Zero());
   screenCamera.parent = satelliteRoot;
 
-  addGreenPillar(mainScene);
-  addEarthAroundLine(mainScene);
+  //add object
+  // addGreenPillar(mainScene);
+  // addEarthAroundLine(mainScene);
 }
 
 function floatingModeInit () {
@@ -305,7 +301,7 @@ function walkingModeInit (playEffect : boolean) {
     WarpEffect(mainScene, floatingRoot.position);
   }
 
-  cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
+  cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));
   // mainCameraRoot.position = cameraPosforWalkingMode;
 
   miniEarth.visibility = 1;
