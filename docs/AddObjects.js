@@ -50,18 +50,12 @@ export const addScreen = async (scene, renderTarget, root) => {
   await BABYLON.SceneLoader.LoadAssetContainerAsync("./assets/", "test.glb", scene).then((container) => {
     screen = container.meshes[1];
     screen.scaling = new BABYLON.Vector3(4.7, 4.7, 4.7);
-    // obj.rotate(BABYLON.Vector3.Up, )
-    // human.parent = floatingRoot;
-    // screen = obj;
     screen.parent = root;
-    // screen.rotate(BABYLON.Vector3.Up(), 3.14);
     screen.position.z = 10;
     screen.position.y = 10;
 
     scene.addMesh(screen);
   });
-  // const screen = BABYLON.CreatePlane("map", { width: 30, height: 15 }, scene);
-  // screen.scaling = new BABYLON.Vector3(-1, 1, 1);
 
   BABYLON.Effect.ShadersStore.screenVertexShader = `
   precision highp float;
@@ -88,22 +82,33 @@ export const addScreen = async (scene, renderTarget, root) => {
 
   uniform sampler2D cameraTexture;
   uniform sampler2D uiTexture;
+  uniform sampler2D cornerTexture;
+
+  uniform float screenInfoAlpha;
 
   void main(void) {
     vec4 cam = texture2D(cameraTexture, vUV);
     vec4 ui = texture2D(uiTexture, vec2(1.0-vUV.x, 1.0-vUV.y));
-    gl_FragColor = mix(cam, ui, ui.a);
-    // gl_FragColor = vec4(vUV.x, vUV.y, 0, 1);
+    float a = ui.a * screenInfoAlpha;
+    vec4 corner = texture2D(cornerTexture, vUV);
+    gl_FragColor = mix(cam, ui, a) + corner;
   }
   `;
-  const screenMat = new BABYLON.ShaderMaterial("screen", scene, { vertex: "screen", fragment: "screen" }, { needAlphaBlending: true });
+  const screenMat = new BABYLON.ShaderMaterial("screen", scene, { vertex: "screen", fragment: "screen" },
+    {
+      needAlphaBlending: true,
+      attributes: ["position", "normal", "uv"],
+      uniforms: ["worldViewProjection", "cameraTexture", "uiTexture", "cornerTexture", "screenInfoAlpha"],
+    });
   const GameTitleGUITexture = AdvancedDynamicTexture.CreateForMesh(screen, 2350, 1000, true, false, true);
-  await GameTitleGUITexture.parseFromSnippetAsync("#EBFC21");
+  await GameTitleGUITexture.parseFromSnippetAsync("#EBFC21#1");
+  const corner = new BABYLON.Texture("./assets/Screen/corner.png");
   screenMat.setTexture("cameraTexture", renderTarget);
   screenMat.setTexture("uiTexture", GameTitleGUITexture);
+  screenMat.setTexture("cornerTexture", corner);
   screenMat.backFaceCulling = false;
   screen.material = screenMat;// rttMaterial;
-  return screen;
+  return { screen, screenMat };
 };
 
 export const addEarthAroundLine = (scene) => {

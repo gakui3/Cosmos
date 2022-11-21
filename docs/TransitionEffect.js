@@ -124,7 +124,7 @@ export const AddTransitionEffect = (camera) => {
     }
     `;
 
-  const postProcess = new BABYLON.PostProcess("My custom post process", "custom", ["_Cplor", "_Width", "_Core", "_NoiseScale", "_NoiseSpeed", "_Time"], null, 1, camera);
+  const postProcess = new BABYLON.PostProcess("My custom post process", "custom", ["_Color", "_Width", "_Core", "_NoiseScale", "_NoiseSpeed", "_Time"], null, 1, camera);
   postProcess.onApply = function (effect) {
     // effect.setFloat2("screenSize", postProcess.width, postProcess.height);
     // effect.setFloat("threshold", 0.30);

@@ -22,7 +22,8 @@ let earth: BABYLON.Mesh,
   human: BABYLON.Mesh,
   debug: BABYLON.Mesh,
   screen: any,//BABYLON.Mesh,
-  mainCamera: BABYLON.ArcRotateCamera,//BABYLON.FreeCamera,
+  screenMat: any,//BABYLON.ShaderMaterial,
+  mainCamera:BABYLON.FreeCamera,
   subCamera: BABYLON.Camera,
   screenCamera: BABYLON.UniversalCamera,
   renderTarget: BABYLON.RenderTargetTexture,
@@ -36,6 +37,8 @@ let earth: BABYLON.Mesh,
   currentPhi: number,
   currentTheta: number,
   galaxy: any,
+  walking: boolean,
+  screenInfoAlpha: number,
   rightBottomGUI : any;
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('renderCanvas');
@@ -56,6 +59,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           } else {
             earth.rotate(BABYLON.Vector3.Right(), 0.01, BABYLON.Space.WORLD);
             miniEarth.rotate(BABYLON.Vector3.Right(), 0.01, BABYLON.Space.WORLD);
+            walking = true;
           }
           break;
         case "a":
@@ -116,6 +120,9 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
         case "c":
           WarpEffect(mainScene, new BABYLON.Vector3(0, 0, -8));
           break;
+        case "w":
+          walking = false;
+          break;
         default:
           break;
       }
@@ -125,6 +132,7 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
   vlon = BABYLON.Scalar.Clamp(vlon, -0.03, 0.03);
 });
 
+let timer = 0;
 function update () {
   switch (mode) {
     case Mode.floating: {
@@ -155,7 +163,22 @@ function update () {
       // earth.rotate(rotateAxis, amount, BABYLON.Space.WORLD);
       mainCameraRoot.lookAt(walkingRoot.position);
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
-      // screenRoot.lookAt(mainCameraRoot.position);
+
+      if (walking) {
+        screenInfoAlpha -= 0.05;
+      }
+      else {
+        screenInfoAlpha += 0.05;
+      }
+
+      //updateで毎フレームsetFloatを呼ぶと処理落ちしていたので
+      timer += 0.03;
+      if (timer > 0.1) {
+        screenInfoAlpha = BABYLON.Scalar.Clamp(screenInfoAlpha, 0.0, 1.0);
+        screenMat.setFloat("screenInfoAlpha", screenInfoAlpha);
+        timer = 0;
+      }
+
       amount = 0;
       break;
     }
@@ -164,7 +187,7 @@ function update () {
 }
 
 function init () {
-  mainCamera = new BABYLON.ArcRotateCamera("mainCamera", -1.57, 1.57, 0, BABYLON.Vector3.Zero(), mainScene);//new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
+  mainCamera = new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3(0, 0, 0), mainScene);
   screenCamera = new BABYLON.UniversalCamera("subCamera", new BABYLON.Vector3(0, 0, -1), mainScene);
   mainCameraRoot = new BABYLON.TransformNode("mainCameraRoot");
 
@@ -173,14 +196,14 @@ function init () {
   subSceneForMiniEarth.autoClear = false
 
   mainCamera.parent = mainCameraRoot;
+  walking = false;
 
-
-  mainCamera.inputs.addMouseWheel();
+  // mainCamera.inputs.addMouseWheel();
   mainCamera.attachControl(canvas, true);
-
   mainCamera.inputs.removeByType("FreeCameraKeyboardMoveInput");
-  mainCamera.lowerRadiusLimit = 0;
-  mainCamera.upperRadiusLimit = 20;
+
+
+  screenInfoAlpha = 1.0;
 
   mainScene.clearColor = new BABYLON.Color4(0.0, 0.03, 0.13, 1.0);
 
@@ -228,7 +251,11 @@ async function addObject () {
   });
 
   // screen
-  screen = addScreen(mainScene, renderTarget, screenRoot);
+  const value = await addScreen(mainScene, renderTarget, screenRoot);
+  screen = value.screen;
+  screenMat = value.screenMat;
+  screenMat.setFloat("screenInfoAlpha", 1.0);
+
 
   // particles
   CreateGalaxy(mainScene);
@@ -274,8 +301,9 @@ function walkingModeInit (playEffect : boolean) {
     WarpEffect(mainScene, p);
     WarpEffect(mainScene, floatingRoot.position);
   }
+
   cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));//floatingRoot.position.add(floatingRoot.up.scale(-5)).add(floatingRoot.forward.scale(-1));
-  
+  mainCameraRoot.position = cameraPosforWalkingMode;
 
   miniEarth.visibility = 1;
   rightBottomGUI.rootContainer.isVisible = true;
