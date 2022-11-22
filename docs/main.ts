@@ -192,6 +192,7 @@ function init () {
 
   mainCamera.parent = mainCameraRoot;
   walking = false;
+  timer = 0;
 
   // mainCamera.inputs.addMouseWheel();
   mainCamera.attachControl(canvas, true);
