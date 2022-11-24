@@ -4,7 +4,7 @@ import "@babylonjs/gui";
 import { CreateGalaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
-import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen, addRightBottomUI, addEarth } from "./AddObjects";
+import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen, addRightBottomUI, addEarth, addSatellite } from "./AddObjects";
 import { WarpEffect } from "./WarpEffect";
 import { AbstractMesh, ClampBlock, Material, NodeMaterial } from "babylonjs";
 import { any } from "@tensorflow/tfjs";
@@ -39,7 +39,8 @@ let earth: BABYLON.Mesh,
   walking: boolean,
   screenInfoAlpha: number,
   rightBottomGUI: any,
-  timer: number;
+  timer: number,
+  satellite: any;
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
@@ -98,10 +99,10 @@ mainScene.onKeyboardObservable.add((kbInfo) => {
           BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, screenCamera, { width: 1920, height: 1080 });
           break;
         case "ArrowUp":
-          satelliteRoot.rotate(BABYLON.Vector3.Right(), 0.01);
+          satelliteRoot.rotate(BABYLON.Vector3.Right(), -0.01);
           break;
         case "ArrowDown":
-          satelliteRoot.rotate(BABYLON.Vector3.Right(), -0.01);
+          satelliteRoot.rotate(BABYLON.Vector3.Right(), 0.01);
           break;
         case "ArrowLeft":
           satelliteRoot.rotate(BABYLON.Vector3.Forward(), -0.01);
@@ -194,9 +195,8 @@ function init () {
   walking = false;
   timer = 0;
 
-  // mainCamera.inputs.addMouseWheel();
   mainCamera.attachControl(canvas, true);
-  mainCamera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+  mainCamera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
   mainCamera.lowerRadiusLimit = 0;
   mainCamera.upperRadiusLimit = 20;
 
@@ -228,7 +228,7 @@ async function addObject () {
   //最初からスクリーンを表示しておくために初期化
   const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5);
   walkingRoot.position = p;
-  satelliteRoot.position = p;
+  satelliteRoot.position = p.add(new BABYLON.Vector3(0, 0.65, 0));
 
   // earth
   earth = await addEarth(mainScene, renderTarget);
@@ -238,6 +238,11 @@ async function addObject () {
 
   // mini earth
   miniEarth = addMiniEarth(subSceneForMiniEarth);
+
+  //add satellite
+  satellite = await addSatellite(mainScene);
+  satellite.parent = satelliteRoot;
+  satelliteRoot.rotate(BABYLON.Vector3.Right(), -1);
 
 
   //human
@@ -293,9 +298,9 @@ function walkingModeInit (playEffect : boolean) {
   walkingRoot.position = BABYLON.Vector3.Zero();
   walkingRoot.rotationQuaternion = BABYLON.Quaternion.Identity();
   human.parent = walkingRoot;
-  const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5);
+  const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5).add(new BABYLON.Vector3(0, 0, -0.75));
   walkingRoot.position = p;
-  satelliteRoot.position = p;
+  // satelliteRoot.position = p;
   // walkingRoot.rotate(floatingRoot.right, -1.57);
   if (playEffect) {
     WarpEffect(mainScene, p);

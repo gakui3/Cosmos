@@ -1,4 +1,5 @@
 import * as BABYLON from "@babylonjs/core";
+import "@babylonjs/loaders";
 import { calcLonLatToXYZ, lookAt, getDecimal, params } from "./Common";
 import { AdvancedDynamicTexture, Image } from "@babylonjs/gui/2D";
 
@@ -215,4 +216,18 @@ export const addRightBottomUI = (scene) => {
   guiTexture.addControl(image);
   guiTexture.rootContainer.isVisible = false;
   return guiTexture;
+};
+
+export const addSatellite = async (scene) => {
+  let satellite;
+  await BABYLON.SceneLoader.LoadAssetContainerAsync("./assets/", "satellite.glb", scene).then((container) => {
+    satellite = container.meshes[1];
+    satellite.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
+    satellite.rotate(BABYLON.Vector3.Up(), 3.14);
+    satellite.rotate(BABYLON.Vector3.Right(), -1.57);
+    // satellite.position = new BABYLON.Vector3(0, 0.75, 0);
+    scene.addMesh(satellite);
+  });
+
+  return satellite;
 };
