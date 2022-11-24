@@ -4,7 +4,7 @@ import "@babylonjs/gui";
 import { CreateGalaxy } from "./Galaxy";
 import { AddTransitionEffect, FadeInOut } from "./TransitionEffect";
 import { calcLonLatToXYZ, getDecimal, lookAt, params, Mode } from "./Common";
-import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen, addRightBottomUI, addEarth, addSatellite } from "./AddObjects";
+import { addGreenPillar, addEarthAroundLine, addMiniEarth, addScreen, addRightBottomUI, addEarth, addSatellite, addPlayerArrow } from "./AddObjects";
 import { WarpEffect } from "./WarpEffect";
 import { AbstractMesh, ClampBlock, Material, NodeMaterial } from "babylonjs";
 import { any } from "@tensorflow/tfjs";
@@ -40,7 +40,8 @@ let earth: BABYLON.Mesh,
   screenInfoAlpha: number,
   rightBottomGUI: any,
   timer: number,
-  satellite: any;
+  satellite: any,
+  playerArrow: any;
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
@@ -157,7 +158,7 @@ function update () {
     }
     case Mode.walking: {
       const rotateAxis = mainCameraRoot.right;
-      mainCameraRoot.lookAt(walkingRoot.position);
+      mainCameraRoot.lookAt(walkingRoot.position.clone().add(new BABYLON.Vector3(0, 1.5, 0)));
       mainCameraRoot.position = BABYLON.Vector3.Lerp(mainCameraRoot.position, cameraPosforWalkingMode, 0.05);
 
       if (walking) {
@@ -228,7 +229,7 @@ async function addObject () {
   //最初からスクリーンを表示しておくために初期化
   const p = calcLonLatToXYZ(0, 0, params.humanAlt - 0.5);
   walkingRoot.position = p;
-  satelliteRoot.position = p.add(new BABYLON.Vector3(0, 0.65, 0));
+  satelliteRoot.position = p.clone().add(new BABYLON.Vector3(0, 0.65, 0));
 
   // earth
   earth = await addEarth(mainScene, renderTarget);
@@ -244,6 +245,9 @@ async function addObject () {
   satellite.parent = satelliteRoot;
   satelliteRoot.rotate(BABYLON.Vector3.Right(), -1);
 
+  //add playerArrow
+  playerArrow = await addPlayerArrow(mainScene);
+  playerArrow.position = p.add(new BABYLON.Vector3(0, 0, -0.75));
 
   //human
   BABYLON.SceneLoader.Append("./assets/", "01.glb", mainScene, (obj) => {
@@ -307,7 +311,7 @@ function walkingModeInit (playEffect : boolean) {
     WarpEffect(mainScene, floatingRoot.position);
   }
 
-  cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 0, -8));
+  cameraPosforWalkingMode = p.clone().add(new BABYLON.Vector3(0, 2, -8));
   // mainCameraRoot.position = cameraPosforWalkingMode;
 
   miniEarth.visibility = 1;

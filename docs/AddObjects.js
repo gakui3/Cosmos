@@ -231,3 +231,27 @@ export const addSatellite = async (scene) => {
 
   return satellite;
 };
+
+export const addPlayerArrow = async (scene) => {
+  let playerArrow;
+  await BABYLON.SceneLoader.LoadAssetContainerAsync("./assets/", "playerArrow.glb", scene).then((container) => {
+    playerArrow = container.meshes[1];
+    playerArrow.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+    playerArrow.rotate(BABYLON.Vector3.Up(), 3.14);
+    // playerArrow.rotate(BABYLON.Vector3.Up(), 3.14);
+    // playerArrow.rotate(BABYLON.Vector3.Right(), -1.57);
+    // satellite.position = new BABYLON.Vector3(0, 0.75, 0);
+    const mat = new BABYLON.StandardMaterial("playerArrowMaterial", scene);
+    mat.diffuseColor = new BABYLON.Color3(1, 1, 1);
+    // mat.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+    mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    // mat.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+    mat.disableLighting = true;
+    mat.backFaceCulling = false;
+    playerArrow.material = mat;
+
+    scene.addMesh(playerArrow);
+  });
+
+  return playerArrow;
+};
